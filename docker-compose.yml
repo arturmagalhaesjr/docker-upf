@@ -1,0 +1,69 @@
+version: '3'
+services:
+   nginx:
+    image: nginx
+    volumes:
+       - ./conf/nginx.conf:/etc/nginx/conf.d/000-default.conf
+       - ./projects:/var/www/projects
+    ports:
+       - 80:80
+   php7:
+    image: nezkal/php7
+    volumes:
+      - ./conf/php.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./projects:/var/www/projects
+    restart: always
+    ports:
+      - 9000:9000
+    deploy:
+       restart_policy:
+          condition: on-failure
+          delay: 10s
+   mysql57:
+     image: mysql
+     ports:
+       - 0.0.0.0:3307:3306
+     environment:
+       - MYSQL_ROOT_PASSWORD=123456
+     volumes:
+       - ./mysql57_data:/var/lib/mysql
+       - ./sql:/sql
+     restart: always
+     deploy:
+        restart_policy:
+           condition: on-failure
+           delay: 10s
+   phpmyadmin:
+      image: phpmyadmin/phpmyadmin
+      links:
+        - mysql57
+      ports:
+        - 7005:80
+      environment:
+        - MYSQL_USERNAME=root
+        - MYSQL_ROOT_PASSWORD=123456
+        - PMA_HOST=mysql57
+   mysql55:
+     image: mysql:5.5
+     ports:
+       - 0.0.0.0:3308:3306
+     environment:
+       - MYSQL_ROOT_PASSWORD=123456
+     volumes:
+       - ./mysql55_data:/var/lib/mysql
+       - ./sql:/sql
+     restart: always
+     deploy:
+        restart_policy:
+           condition: on-failure
+           delay: 10s
+   phpmyadmin2:
+      image: phpmyadmin/phpmyadmin
+      links:
+        - mysql55
+      ports:
+        - 7006:80
+      environment:
+        - MYSQL_USERNAME=root
+        - MYSQL_ROOT_PASSWORD=12345
+        - PMA_HOST=mysql55
